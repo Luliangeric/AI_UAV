@@ -53,10 +53,11 @@ class Control:
         temp = self.uav_price[uav_type]
         self.uav_init['load_weight'] = temp['load_weight']
         self.uav_init['value'] = temp['value']
+        self.uav_init['capacity'] = temp['capacity']
+        self.uav_init['charge'] = temp['charge']
 
         self.uav_init['no'] = uav_no
         self.uav_index[uav_no] = Agent(self.uav_init)
-        # self.setpath(uav_no, (*self.parking[0:2], self.h_low))
 
     def setpath(self, u_num, gpos, behave=1):
         if u_num not in self.uav_index.keys() or not self._check(gpos):
@@ -68,7 +69,7 @@ class Control:
         uav.reset()
         uav.set_path(self.optimal_path(uav.pos, gpos), behave)
 
-    def pick_goods(self, u_num, g_no, g_spos, g_gpos):
+    def pick_goods(self, u_num, g_no, g_weight, g_spos, g_gpos):
         goods_list = list()
         uav = self.uav_index.get(u_num)
         if not uav:
@@ -82,12 +83,16 @@ class Control:
 
         uav.goods_list = goods_list
         uav.catch_goods = g_no
+        uav.good_weight = g_weight
 
     def drive_no(self, no, pos, index=-1):
         uav = self.uav_index[no]
         uav.wait = 1
         uav.pos = pos
         uav.path_index += index
+
+        if uav.goods_no != -1:
+            uav.remain_electricity -= uav.good_weight
 
     def uav_update(self, pstMatchStatus):
         destroy_list = []
@@ -231,8 +236,8 @@ class Control:
         uav_info = []
         for key, item in self.uav_index.items():
             # item.getinfo()
-            temp = {'no': int(item.no), 'x': int(item.pos[0]), 'y': int(item.pos[1]),
-                    'z': int(item.pos[2]), 'goods_no': int(item.goods_no)}
+            temp = {'no': int(item.no), 'x': int(item.pos[0]), 'y': int(item.pos[1]), 'z': int(item.pos[2]),
+                    'goods_no': int(item.goods_no), 'remain_electricity': item.remain_electricity}
             uav_info.append(temp)
         return uav_info
 
