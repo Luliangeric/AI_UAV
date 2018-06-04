@@ -25,7 +25,8 @@ class Policy(Control):
         self.goods_not_solved = dict()
 
         self.enemy_uav = list()
-        self.destroy_enemy = set()
+        self.enemy_set_pre = set()
+        self.enemy_set = set()
         self.pick_enemy_solve = set()
         self.we_uav = list()
 
@@ -237,6 +238,12 @@ class Policy(Control):
         for key in destroy:
             index = self.type_uav.index(key[1])
             self.type_num[index] -= 1
+
+            for enemy_no, uav_no in self.kill_list.items():
+                if uav_no == key[0]:
+                    self.kill_list[enemy_no] = None
+                    break
+
             if key[0] in self.pick_we_list:
                 tmp = self.pick_we_list.pop(key[0])
                 self.good_start_list.pop(tmp)
@@ -259,58 +266,63 @@ class Policy(Control):
                 self.pick_we_list[item['no']] = item['goods_no']
 
         # 处理对方无人机的信息，包括已经拾取到货物的飞机的编号、位置
+        self.enemy_set.clear()
         for item in self.enemy_uav:
-            if item['no'] in self.destroy_enemy:
-                continue
-            if item['status'] == 1:
-                if item['no'] in self.kill_list:
-                    self.kill_list.pop(item['no'])
-                if item['no'] in self.pick_enemy_solve:
-                    self.pick_enemy_solve.remove(item['no'])
+            self.enemy_set.add(item['no'])
+        destroy_enemy = self.enemy_set_pre - self.enemy_set & self.enemy_set_pre
 
-                self.destroy_enemy.add(item['no'])
+        self.enemy_set_pre.clear()
+        self.enemy_set_pre = set(self.enemy_set)
+
+        for key in destroy_enemy:
+            if key in self.kill_list:
+                self.kill_list.pop(key)
+            if key in self.pick_enemy_solve:
+                self.pick_enemy_solve.remove(key)
+
+            if key in self.pick_enemy_list:
+                ene_uav = self.pick_enemy_list.pop(key)
+                self.good_start_list_enemy.pop(ene_uav[0])
+                self.good_goal_list_enemy.pop(ene_uav[0])
+            elif key in self.oth_enemy_list:
+                self.oth_enemy_list.pop(key)
+
+        for item in self.enemy_uav:
+            if item['goods_no'] >= 0:
+                if item['no'] not in self.pick_enemy_list:
+                    for good in goods:
+                        if good['no'] == item['goods_no']:
+                            self.good_start_list_enemy[good['no']] = (good['start_x'], good['start_x'])
+                            self.good_goal_list_enemy[good['no']] = (good['end_x'], good['end_x'])
+                            self.pick_enemy_list[item['no']] = [item['goods_no'], (item['x'], item['y'], item['z']),
+                                                                good['value'], item['no']]  # 添加敌方载货无人机的信息
+                            break
+
+                    if item['goods_no'] in self.goods_solved:
+                        uav_no = self.goods_solved.pop(item['goods_no'])
+                        self.goods_solved_inverse.pop(uav_no)
+                        self.goods_solved_info.pop(item['goods_no'])
+                        self.good_start_list.pop(item['goods_no'])
+                        self.good_goal_list.pop(item['goods_no'])
+                        if uav_no in self.uav_index:
+                            self.uav_index[uav_no].reset()
+                    elif item['goods_no'] in self.goods_not_solved:
+                        self.goods_not_solved.pop(item['goods_no'])
+                else:
+                    if not item['status']:
+                        self.pick_enemy_list[item['no']][1] = (item['x'], item['y'], item['z'])  # 更新位置
+                if item['no'] in self.oth_enemy_list:
+                    self.oth_enemy_list.pop(item['no'])
+            else:
                 if item['no'] in self.pick_enemy_list:
                     ene_uav = self.pick_enemy_list.pop(item['no'])
                     self.good_start_list_enemy.pop(ene_uav[0])
                     self.good_goal_list_enemy.pop(ene_uav[0])
-                elif item['no'] in self.oth_enemy_list:
-                    self.oth_enemy_list.pop(item['no'])
-            else:
-                if item['goods_no'] >= 0:
-                    if item['no'] not in self.pick_enemy_list:
-                        for good in goods:
-                            if good['no'] == item['goods_no']:
-                                self.good_start_list_enemy[good['no']] = (good['start_x'], good['start_x'])
-                                self.good_goal_list_enemy[good['no']] = (good['end_x'], good['end_x'])
-                                self.pick_enemy_list[item['no']] = [item['goods_no'], (item['x'], item['y'], item['z']),
-                                                                    good['value'], item['no']]  # 添加敌方载货无人机的信息
-                                break
 
-                        if item['goods_no'] in self.goods_solved:
-                            uav_no = self.goods_solved.pop(item['goods_no'])
-                            self.goods_solved_inverse.pop(uav_no)
-                            self.goods_solved_info.pop(item['goods_no'])
-                            self.good_start_list.pop(item['goods_no'])
-                            self.good_goal_list.pop(item['goods_no'])
-                            if uav_no in self.uav_index:
-                                self.uav_index[uav_no].reset()
-                        elif item['goods_no'] in self.goods_not_solved:
-                            self.goods_not_solved.pop(item['goods_no'])
-                    else:
-                        if not item['status']:
-                            self.pick_enemy_list[item['no']][1] = (item['x'], item['y'], item['z'])  # 更新位置
-                    if item['no'] in self.oth_enemy_list:
-                        self.oth_enemy_list.pop(item['no'])
-                else:
-                    if item['no'] in self.pick_enemy_list:
-                        ene_uav = self.pick_enemy_list.pop(item['no'])
-                        self.good_start_list_enemy.pop(ene_uav[0])
-                        self.good_goal_list_enemy.pop(ene_uav[0])
-
-                        if item['no'] in self.pick_enemy_solve:
-                            self.pick_enemy_solve.remove(item['no'])
-                    if item['no'] not in self.oth_enemy_list:
-                        self.oth_enemy_list[item['no']] = item
+                    if item['no'] in self.pick_enemy_solve:
+                        self.pick_enemy_solve.remove(item['no'])
+                if item['no'] not in self.oth_enemy_list:
+                    self.oth_enemy_list[item['no']] = item
 
         # 添加货物信息
         for good in goods:
