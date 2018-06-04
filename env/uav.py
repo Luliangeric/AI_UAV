@@ -27,6 +27,14 @@ class Agent:
         self.dir = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0), (-1, 1, 0), (-1, 0, 0),
                     (-1, -1, 0), (0, -1, 0), (1, -1, 0), (0, 0, 1), (0, 0, -1)]
 
+        self.capacity = initinfo['capacity']
+        self.charge = initinfo['charge']
+        self.remain_electricity = initinfo['remain_electricity']
+
+        self.charge_pos = initinfo['pos']
+        self.is_charge = 1
+        self.good_weight = 0
+
     def set_path(self, path, behave):
         self.path = path
         self.path_index = 0
@@ -44,28 +52,39 @@ class Agent:
             return self.pos
 
     def move(self, path_planning):
-        if self.path and not self.wait and self.behavior != 3:
-            if self.path_index < self.path_len and self._check():
+        if self.path and not self.wait and not self.is_charge:
+            if not self._check():
+                return None
+            if self.path_index < self.path_len:
+                if self.goods_no != -1:
+                    self.remain_electricity -= self.good_weight   # 更新电量
+
                 self.pos = self.path[self.path_index]
                 self.path_index += 1
                 if self.path_index == self.path_len:
-                    self.IsArrive = 1
                     if len(self.goods_list) == 2:
                         self.goods_no = self.catch_goods
+                    if not len(self.goods_list):
+                        self.path = None
+                        self.path_index = 0
+                        self.path_len = 0
+                        self.catch_goods = -1
+                        self.behavior = 1
             else:
-                try:
-                    pos = self.goods_list.pop()
-                except IndexError:
-                    self.path = None
-                    self.path_index = 0
-                    self.path_len = 0
-                    self.catch_goods = -1
-                    self.behavior = 1
-                else:
-                    self.set_path(path_planning(self.pos, pos), 0)
-                    self.pos = self.path[self.path_index]
-                    self.path_index += 1
-        return self.IsArrive
+                if self.goods_no != -1:
+                    self.remain_electricity -= self.good_weight   # 更新电量
+
+                pos = self.goods_list.pop()
+                self.set_path(path_planning(self.pos, pos), 0)
+                self.pos = self.path[self.path_index]
+                self.path_index += 1
+        else:
+            if self.pos == self.charge_pos:
+                self.is_charge = 1
+                self.remain_electricity += self.charge
+                if self.remain_electricity >= self.capacity:
+                    self.remain_electricity = self.capacity
+                    self.is_charge = 0
 
     def reset(self):
         self.path = None
