@@ -9,7 +9,7 @@ class Agent:
         self.h_high = initinfo["h_high"]
 
         self.path = None
-        self.status = 0  # 0表示正常， 1表示坠毁， 2表示处于雾区
+        self.status = 0  # 0表示正常， 1表示坠毁， 2表示处于雾区， 3表示前往充电
         self.goods_no = -1
 
         self.behavior = 1  # 0: pick, 1: free, 2: protect/attack, 3: carefully
@@ -35,6 +35,8 @@ class Agent:
         self.is_charge = 1
         self.good_weight = 0
 
+        self.pass_allow = 1
+
     def set_path(self, path, behave):
         self.path = path
         self.path_index = 0
@@ -52,7 +54,7 @@ class Agent:
             return self.pos
 
     def move(self, path_planning):
-        if self.path and not self.wait and not self.is_charge:
+        if self.path and not self.wait and self.pass_allow and not self.is_charge:
             if not self._check():
                 return None
             if self.path_index < self.path_len:
@@ -70,6 +72,7 @@ class Agent:
                         self.path_len = 0
                         self.catch_goods = -1
                         self.behavior = 1
+                        self.good_weight = 0
             else:
                 if self.goods_no != -1:
                     self.remain_electricity -= self.good_weight   # 更新电量
@@ -118,6 +121,4 @@ class Agent:
         print(print_info)
 
 
-if __name__ == '__main__':
-    from env.test import map
 

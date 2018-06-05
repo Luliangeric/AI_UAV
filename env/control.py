@@ -1,6 +1,4 @@
 import numpy as np
-from concurrent import futures
-from multiprocessing import cpu_count
 from env.uav import Agent
 
 
@@ -112,6 +110,27 @@ class Control:
         return destroy_list
 
     def step(self):
+        allow = 0
+        for item in self.uav_index.values():
+            if item.pos[0] == self.parking[0] and item.pos[1] == self.parking[1] and 0 < item.pos[2] <= self.h_low:
+                if item.behavior == 3:
+                    allow = -1
+                else:
+                    allow = 1
+                break
+
+        for item in self.uav_index.values():
+            if not allow:
+                item.pass_allow = 1
+            elif allow == 1:
+                if item.behavior == 3 and abs(item.pos[0] - self.parking[0]) + abs(item.pos[1] - self.parking[1]) < 3:
+                    item.pass_allow = 0
+            else:
+                if item.pos == self.parking:
+                    item.pass_allow = 0
+
+        self.check_safe()
+
         for item in self.uav_index.values():
 
             item.move(self.optimal_path)
@@ -124,7 +143,7 @@ class Control:
                 check_point.add(item.pos)
             else:
                 temp[key] = item
-        for behavior in (0, 2, 1):
+        for behavior in (0, 2, 3, 1):
             for key, item in temp.items():
                 if item.behavior != behavior:
                     continue
@@ -138,7 +157,6 @@ class Control:
                         next_step = np.array(next_pos) - np.array(pos)
                         step = np.array(pos) - np.array(item.pos)
                         if tuple(next_step) == (0, 0, 0):
-                            # if item.pos[2] >= self.h_low:
                             try:
                                 dire = self.ACTION.index(tuple(step))
                             except ValueError:
@@ -245,7 +263,7 @@ class Control:
         busy_list = set()
         arrive_list = set()
         for key, item in self.uav_index.items():
-            if item.behavior == 1:
+            if item.behavior == 1 or item.behavior == 3:
                 arrive_list.add(key)
             else:
                 busy_list.add(key)
@@ -268,14 +286,9 @@ class Control:
                 if len(spos3t) > 2:
                     break
 
-        if len(spos3t) < 8:
-            res = []
-            for spos, gpos in zip(spos3t, gpos3t):
-                res.append(self.astar(spos, gpos))
-        else:
-            with futures.ProcessPoolExecutor() as executor:
-                res = executor.map(self.astar, spos3t, gpos3t)
-            res = list(res)
+        res = []
+        for spos, gpos in zip(spos3t, gpos3t):
+            res.append(self.astar(spos, gpos))
 
         length = []
         for i, item in enumerate(res):

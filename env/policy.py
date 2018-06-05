@@ -52,6 +52,9 @@ class Policy(Control):
 
         self.kill_list = dict()
 
+        self.low_power = (2 * self.h_low + int(max(self.parking[0], self.parking[1]) / 4)) \
+                            * self.uav_price[self.cheap_uav_type]['load_weight']
+
     def analyze(self, pstMatchStatus):
         self.value = pstMatchStatus['we_value']
         self.enemy_uav = pstMatchStatus['UAV_enemy']
@@ -114,7 +117,7 @@ class Policy(Control):
                     self.good_start_list[good[0]] = good[3]
                     self.good_goal_list[good[0]] = good[4]
 
-                    self.pick_goods(key, good[0], good[3], good[4])
+                    self.pick_goods(key, good[0], good[5], good[3], good[4])
                     self.goods_not_solved.pop(good[0])
 
                     picked_good.add(good[0])
@@ -225,13 +228,24 @@ class Policy(Control):
         # ################################################### search
         # 对于空闲的无人机，给定随机位置
         for key in free_list:
-            if key in self.goods_solved_inverse:
+            uav = self.uav_index[key]
+            if not uav.IsArrive:
                 continue
-            gpos = (int(self.MapSize[0] / 2) + random.randint(-int(self.MapSize[0] / 2), int(self.MapSize[0] / 2)),
-                    int(self.MapSize[1] / 2) + random.randint(-int(self.MapSize[1] / 2), int(self.MapSize[1] / 2)),
-                    self.h_low + random.randint(0, 2))
-            if self.uav_index[key].pos != gpos and self.uav_index[key].IsArrive:
-                self.setpath(key, gpos, 1)
+
+            if uav.pos[2] < self.h_low:
+                gpos = (uav.pos[0], uav.pos[1], self.h_low)
+                behave = 1
+            else:
+                if uav.type != self.cheap_uav_type and uav.remain_electricity < self.low_power:
+                    gpos = self.parking
+                    behave = 3
+                else:
+                    gpos = (int(self.MapSize[0] / 2) + random.randint(-int(self.MapSize[0] / 2), int(self.MapSize[0] / 2)),
+                            int(self.MapSize[1] / 2) + random.randint(-int(self.MapSize[1] / 2), int(self.MapSize[1] / 2)),
+                            self.h_low + random.randint(0, 2))
+                    behave = 1
+
+            self.setpath(key, gpos, behave)
 
     def solve_goods(self, goods, destroy):
         # 对于撞毁的无人机，更新我方拾取的货物列表
@@ -368,7 +382,7 @@ class Policy(Control):
                     continue
                 else:
                     dis = heuristic_dis + max(abs(item['end_pos'][0] - item['start_pos'][0]), abs(item['end_pos'][1] - item['start_pos'][1]))
-                    uav_goods_list.append((good_no, item['value'] / dis, item['value'], item['start_pos'], item['end_pos']))
+                    uav_goods_list.append((good_no, item['value'] / dis, item['value'], item['start_pos'], item['end_pos'], item['weight']))
         uav_goods_list.sort(key=lambda x: x[1], reverse=True)
         return uav_goods_list
 

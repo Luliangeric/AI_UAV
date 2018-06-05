@@ -4,6 +4,8 @@
     <list default="true" id="5155e94e-131e-4e3f-a15f-3235448e1222" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/env/control.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/control.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/policy.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/policy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/uav.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/uav.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -13,12 +15,12 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="484">
-              <caret line="58" lean-forward="true" selection-start-line="58" selection-end-line="58" />
+            <state relative-caret-position="988">
+              <caret line="58" selection-start-line="58" selection-end-line="58" />
             </state>
           </provider>
         </entry>
@@ -26,8 +28,8 @@
       <file leaf-file-name="policy.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/env/policy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2888">
-              <caret line="233" column="42" lean-forward="true" selection-start-line="233" selection-start-column="42" selection-end-line="233" selection-end-column="42" />
+            <state relative-caret-position="636">
+              <caret line="245" column="30" lean-forward="true" selection-start-line="245" selection-start-column="30" selection-end-line="245" selection-end-column="30" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -38,8 +40,8 @@
       <file leaf-file-name="uav.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/env/uav.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="31" column="62" selection-start-line="31" selection-start-column="62" selection-end-line="31" selection-end-column="62" />
+            <state relative-caret-position="665">
+              <caret line="59" column="47" lean-forward="true" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
             </state>
           </provider>
         </entry>
@@ -47,10 +49,11 @@
       <file leaf-file-name="control.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/env/control.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="931">
-              <caret line="94" column="53" lean-forward="true" selection-start-line="94" selection-start-column="53" selection-end-line="94" selection-end-column="53" />
+            <state relative-caret-position="522">
+              <caret line="268" column="34" lean-forward="true" selection-start-line="268" selection-start-column="34" selection-end-line="268" selection-end-column="34" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#13257#14249#0" />
               </folding>
             </state>
           </provider>
@@ -64,10 +67,10 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/env/policy.py" />
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/env/test.py" />
         <option value="$PROJECT_DIR$/env/uav.py" />
+        <option value="$PROJECT_DIR$/env/policy.py" />
         <option value="$PROJECT_DIR$/env/control.py" />
       </list>
     </option>
@@ -168,7 +171,14 @@
       <option name="project" value="LOCAL" />
       <updated>1528119681659</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="更新了control,修改了pick_goods">
+      <created>1528122058917</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1528122058917</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -177,21 +187,21 @@
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.08429926" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32715377" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Python Console" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Terminal" visible="true" weight="0.114503816" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.08615049" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info id="Favorites" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -200,13 +210,49 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="更新了attack" />
     <MESSAGE value="更新了uav, 增加了电量功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="更新了uav, 增加了电量功能" />
+    <MESSAGE value="更新了control,修改了pick_goods" />
+    <option name="LAST_COMMIT_MESSAGE" value="更新了control,修改了pick_goods" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
+        <state relative-caret-position="988">
           <caret line="58" lean-forward="true" selection-start-line="58" selection-end-line="58" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/env/policy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4389">
+          <caret line="233" column="42" lean-forward="true" selection-start-line="233" selection-start-column="42" selection-end-line="233" selection-end-column="42" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/env/uav.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="589">
+          <caret line="31" column="62" selection-start-line="31" selection-start-column="62" selection-end-line="31" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/env/control.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1729">
+          <caret line="94" column="53" lean-forward="true" selection-start-line="94" selection-start-column="53" selection-end-line="94" selection-end-column="53" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#13257#14249#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="988">
+          <caret line="58" selection-start-line="58" selection-end-line="58" />
         </state>
       </provider>
     </entry>
@@ -219,8 +265,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/env/policy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2888">
-          <caret line="233" column="42" lean-forward="true" selection-start-line="233" selection-start-column="42" selection-end-line="233" selection-end-column="42" />
+        <state relative-caret-position="636">
+          <caret line="245" column="30" lean-forward="true" selection-start-line="245" selection-start-column="30" selection-end-line="245" selection-end-column="30" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
@@ -229,17 +275,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/env/uav.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="31" column="62" selection-start-line="31" selection-start-column="62" selection-end-line="31" selection-end-column="62" />
+        <state relative-caret-position="665">
+          <caret line="59" column="47" lean-forward="true" selection-start-line="59" selection-start-column="47" selection-end-line="59" selection-end-column="47" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/env/control.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="931">
-          <caret line="94" column="53" lean-forward="true" selection-start-line="94" selection-start-column="53" selection-end-line="94" selection-end-column="53" />
+        <state relative-caret-position="522">
+          <caret line="268" column="34" lean-forward="true" selection-start-line="268" selection-start-column="34" selection-end-line="268" selection-end-column="34" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#13257#14249#0" />
           </folding>
         </state>
       </provider>
