@@ -378,6 +378,8 @@ class Policy(Control):
             else:
                 heuristic_dis = max(abs(item['start_pos'][0] - uav.pos[0]), abs(item['start_pos'][1] - uav.pos[1])) \
                                  + abs(uav.pos[2] - self.h_low) + self.h_low    # 计算与货物的启发式距离
+                if (heuristic_dis + 6) * item['weight'] > uav.remain_electricity:
+                    continue
                 if heuristic_dis >= item['left_time']:
                     continue
                 else:

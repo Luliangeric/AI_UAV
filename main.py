@@ -42,7 +42,6 @@ def AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, policy):
         return FlyPlane
 
     policy.analyze(pstMatchStatus)
-    policy.check_safe()
     policy.step()
     FlyPlane = policy.uav_info()
     print('*********************************')
