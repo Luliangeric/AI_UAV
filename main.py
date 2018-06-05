@@ -133,13 +133,8 @@ def main(szIp, nPort, szToken):
 
         # // 进行当前时刻的数据计算, 填充飞行计划，注意：1时刻不能进行移动，即第一次进入该循环时
         FlyPlane = AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, policy)
-        pur_uav = policy.purchase()
-        if pur_uav:
-            FlyPlane_send['purchase_UAV'] = [pur_uav, ]
-        else:
-            FlyPlane_send['purchase_UAV'] = []
-
         FlyPlane_send['UAV_info'] = FlyPlane
+        FlyPlane_send['purchase_UAV'] = policy.purchase()
 
         print(pstMatchStatus["time"])
         # //发送飞行计划

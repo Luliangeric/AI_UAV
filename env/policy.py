@@ -378,12 +378,14 @@ class Policy(Control):
             else:
                 heuristic_dis = max(abs(item['start_pos'][0] - uav.pos[0]), abs(item['start_pos'][1] - uav.pos[1])) \
                                  + abs(uav.pos[2] - self.h_low) + self.h_low    # 计算与货物的启发式距离
-                if (heuristic_dis + 6) * item['weight'] > uav.remain_electricity:
-                    continue
                 if heuristic_dis >= item['left_time']:
                     continue
                 else:
-                    dis = heuristic_dis + max(abs(item['end_pos'][0] - item['start_pos'][0]), abs(item['end_pos'][1] - item['start_pos'][1]))
+                    carry_dis = max(abs(item['end_pos'][0] - item['start_pos'][0]),
+                                    abs(item['end_pos'][1] - item['start_pos'][1])) + 2 * self.h_low
+                    if (carry_dis + 6) * item['weight'] > uav.remain_electricity:
+                        continue
+                    dis = heuristic_dis + carry_dis
                     uav_goods_list.append((good_no, item['value'] / dis, item['value'], item['start_pos'], item['end_pos'], item['weight']))
         uav_goods_list.sort(key=lambda x: x[1], reverse=True)
         return uav_goods_list
@@ -397,27 +399,26 @@ class Policy(Control):
         return False
 
     def purchase(self):
-        value_list = []
-        for i, key in enumerate(self.type_uav):
-            if key == self.cheap_uav_type:
-                self.rate[i] += 0.0001
-            value_list.append(self.type_num[i] / self.rate[i])
-        temp = min(value_list)
-        index = value_list.index(temp)
-        uav_type = self.type_uav[index]
-        print("++++++++++++++++++++++++++++++++++++++++++++++")
-        print(uav_type)
-        print(self.type_uav, self.type_num, self.rate)
-        if self.value > self.uav_price[uav_type]['value']:
-            index = self.type_uav.index(uav_type)
-            self.type_num[index] += 1
-            return {'purchase': uav_type}
-        else:
-            return None
-
-    def assign(self):
-
-        pass
+        purchase_list = []
+        while 1:
+            value_list = []
+            for i, key in enumerate(self.type_uav):
+                if key == self.cheap_uav_type:
+                    self.rate[i] += 0.0001
+                value_list.append(self.type_num[i] / self.rate[i])
+            temp = min(value_list)
+            index = value_list.index(temp)
+            uav_type = self.type_uav[index]
+            print("+++++++++++++++++++++++++++++")
+            print(uav_type)
+            print(self.type_uav, self.type_num, self.rate)
+            if self.value >= self.uav_price[uav_type]['value']:
+                self.value -= self.uav_price[uav_type]['value']
+                index = self.type_uav.index(uav_type)
+                self.type_num[index] += 1
+                purchase_list.append({'purchase': uav_type})
+            else:
+                return purchase_list
 
 
 if __name__ == '__main__':

@@ -29,7 +29,7 @@ class Agent:
 
         self.capacity = initinfo['capacity']
         self.charge = initinfo['charge']
-        self.remain_electricity = initinfo['remain_electricity']
+        self.remain_electricity = 0
 
         self.charge_pos = initinfo['pos']
         self.is_charge = 1
@@ -115,9 +115,9 @@ class Agent:
 
     def getinfo(self):
         print_info = 'no:{}, type:{}, pos:{}, status:{}, goods:{}, wait:{}\n' \
-                     'load_weight:{:3}, value:{:3}, arrive:{}, behavior:{}'.\
+                     'load_weight:{:3}, value:{:3}, arrive:{}, behavior:{}, power:{:5}'.\
             format(self.no, self.type, self.pos, self.status, self.goods_no,
-                   self.wait, self.load_weight, self.value, self.IsArrive, self.behavior)
+                   self.wait, self.load_weight, self.value, self.IsArrive, self.behavior, self.remain_electricity)
         print(print_info)
 
 
