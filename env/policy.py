@@ -65,9 +65,12 @@ class Policy(Control):
         destroy = self.uav_update(pstMatchStatus)
         self.solve_goods(goods, destroy)
         _, free_list = self.uav_we()
+        self.pick(free_list)
+        self.attack(free_list)
+        self.free_uav(free_list)
 
-        # print(busy_list, free_list)
-        # ################################################### 拾取策略， 在能拿到的货物里选择价值最大的
+    def pick(self, free_list):
+        # 拾取策略， 在能拿到的货物里选择价值最大的
         uav_goods_list = dict()
         for key in free_list:
             if self.uav_index[key].pos[2] < self.h_low:
@@ -126,7 +129,9 @@ class Policy(Control):
                         if key == uav_track:
                             self.kill_list[enemy_no] = None
                     break
-        # ################################################### 利用最便宜的无人机攻击对方的价值最大的无人机
+
+    def attack(self, free_list):
+        # 利用最便宜的无人机攻击对方的价值最大的无人机
         uav_attack_protect = dict()
         for key in free_list:
             uav = self.uav_index[key]
@@ -190,7 +195,7 @@ class Policy(Control):
                 self.kill_list[enemy['no']] = uav.no
                 free_list.remove(key[0])
                 uav_attack_protect.pop(key[0])
-        # ################################################### 在对方拾取货物或者放下获得的时候攻击
+        # 在对方拾取货物或者放下获得的时候攻击
         attack_object = list(self.pick_enemy_list.values())
         attack_object.sort(key=lambda x: x[2], reverse=True)
         for item in attack_object:
@@ -199,6 +204,8 @@ class Policy(Control):
                 continue
             for key, uav in uav_attack_protect.items():
                 if uav.behavior == 2 or uav.pos[2] < self.h_low:
+                    continue
+                if self.good_start_list_enemy[item[0]] in self.good_start_list.values():
                     continue
                 attack_pos = np.array((*self.good_start_list_enemy[item[0]], self.h_low))
                 tmp_pos = uav.pos - attack_pos
@@ -225,8 +232,8 @@ class Policy(Control):
                         self.pick_enemy_solve.add(item[3])
                         break
 
-        # ################################################### search
-        # 对于空闲的无人机，给定随机位置
+    def free_uav(self, free_list):
+        # 对于空闲的无人机，给定随机位置，返回充电
         for key in free_list:
             uav = self.uav_index[key]
             if not uav.IsArrive:
@@ -365,7 +372,8 @@ class Policy(Control):
                 elif not good['status'] and good['left_time'] > self.h_low:
                     self.good_num[0] += 1
                     s_x, s_y, e_x, e_y = good['start_x'], good['start_y'], good['end_x'], good['end_y']
-                    self.goods_not_solved[good['no']] = {'start_pos': (s_x, s_y), 'end_pos': (e_x, e_y),
+                    dis = len(self.astar((s_x, s_y, self.h_low), (e_x, e_y, self.h_low)))
+                    self.goods_not_solved[good['no']] = {'start_pos': (s_x, s_y), 'end_pos': (e_x, e_y), 'dis': dis,
                                     'weight': good['weight'], 'value': good['value'], 'left_time': good['left_time']}
 
     # 计算飞机与货物之间的距离，选择价值最大的
@@ -381,12 +389,12 @@ class Policy(Control):
                 if heuristic_dis >= item['left_time']:
                     continue
                 else:
-                    carry_dis = max(abs(item['end_pos'][0] - item['start_pos'][0]),
-                                    abs(item['end_pos'][1] - item['start_pos'][1])) + 2 * self.h_low
-                    if (carry_dis + 6) * item['weight'] > uav.remain_electricity:
+                    # carry_dis = max(abs(item['end_pos'][0] - item['start_pos'][0]),
+                    #                 abs(item['end_pos'][1] - item['start_pos'][1])) + 2 * self.h_low
+                    if (item['dis'] + 6) * item['weight'] > uav.remain_electricity:
                         continue
-                    dis = heuristic_dis + carry_dis
-                    uav_goods_list.append((good_no, item['value'] / dis, item['value'], item['start_pos'], item['end_pos'], item['weight']))
+                    dis = heuristic_dis + item['dis']
+                    uav_goods_list.append((good_no, item['value'] / (dis * item['weight']), item['value'], item['start_pos'], item['end_pos'], item['weight']))
         uav_goods_list.sort(key=lambda x: x[1], reverse=True)
         return uav_goods_list
 
