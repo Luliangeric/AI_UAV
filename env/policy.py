@@ -88,8 +88,8 @@ class Policy(Control):
                     heuristic_dis = max(abs(good_start[0] - uav.pos[0]), abs(good_start[1] - uav.pos[1])) \
                                     + abs(uav.pos[2] - self.h_low) + self.h_low  # 计算与货物的启发式距离
                     tmp_good = self.goods_solved_info[good_no]
-                    dis = heuristic_dis + tmp_good[2] + 6
-                    if tmp_good[0] / (dis * tmp_good[1]) < item[0][1]:
+                    dis = heuristic_dis + tmp_good[2]
+                    if tmp_good[0] / dis < item[0][1]:
                         self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
                         self.good_start_list.pop(good_no)
                         self.good_goal_list.pop(good_no)
@@ -393,7 +393,7 @@ class Policy(Control):
                     if (item['dis'] + 6) * item['weight'] > uav.remain_electricity:
                         continue
                     dis = heuristic_dis + item['dis']
-                    uav_goods_list.append((good_no, item['value'] / (dis * item['weight'])))
+                    uav_goods_list.append((good_no, item['value'] / dis))
         uav_goods_list.sort(key=lambda x: x[1], reverse=True)
         return uav_goods_list
 

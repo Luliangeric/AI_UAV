@@ -70,4 +70,6 @@ msg = {
 
 
 if __name__ == '__main__':
-    pass
+    a = [1,2,3,4]
+    a.insert(1,3)
+    print(a)

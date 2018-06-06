@@ -113,9 +113,8 @@ class Control:
         allow = 0
         for item in self.uav_index.values():
             if item.behavior == 3:
-                if abs(item.pos[0] - self.parking[0]) + abs(item.pos[1] - self.parking[1]) < 4:
+                if max(abs(item.pos[0] - self.parking[0]), abs(item.pos[1] - self.parking[1])) < 3:
                     allow = -1
-                    break
             else:
                 if item.pos[0] == self.parking[0] and item.pos[1] == self.parking[1] and 0 < item.pos[2] <= self.h_low:
                     allow = 1
@@ -125,11 +124,13 @@ class Control:
             if not allow:
                 item.pass_allow = 1
             elif allow == 1:
-                if item.behavior == 3 and abs(item.pos[0] - self.parking[0]) + abs(item.pos[1] - self.parking[1]) < 4:
+                if item.behavior == 3 and max(abs(item.pos[0] - self.parking[0]), abs(item.pos[1] - self.parking[1])) < 4:
                     item.pass_allow = 0
             else:
                 if item.pos == self.parking:
                     item.pass_allow = 0
+                if item.behavior == 3:
+                    item.pass_allow = 1
 
         self.check_safe()
 
@@ -140,17 +141,23 @@ class Control:
     def check_safe(self):
         check_point = set()
         temp = dict()
+        charge_uav = dict()
         for key, item in self.uav_index.items():
             if item.IsArrive or item.is_charge:
                 check_point.add(item.pos)
             else:
-                temp[key] = item
+                if not item.pass_allow and item.behavior == 3:
+                    charge_uav[key] = item
+                else:
+                    temp[key] = item
         for behavior in (0, 2, 3, 1):
             for key, item in temp.items():
                 if item.behavior != behavior:
                     continue
                 item.wait = 0
                 pos = item.next_pos()
+                if pos == self.parking:
+                    continue
                 mid_pos = (item.pos + np.array(pos)) / 2
                 flag = 1
                 if item.pos in check_point and item.pos != self.parking:
@@ -226,12 +233,19 @@ class Control:
                     if pos in check_point or tuple(mid_pos) in check_point:
                         item.wait = 1
                         check_point.add(item.pos)
+                        if item.goods_no != -1:
+                            item.remain_electricity -= item.good_weight
                         continue
 
                 if not item.wait:
                     pos = item.next_pos()
                     check_point.add(pos)
                     check_point.add(tuple(mid_pos))
+        for key, item in charge_uav.items():
+            if item.pos in check_point:
+                next_pos = (item.pos[0], item.pos[1], item.pos[2] - 1)
+                check_point.add(next_pos)
+                self.drive_no(key, next_pos)
 
     def _check_point(self, check_point, pos, next_pos):
         mid_pos = (np.array(pos) + np.array(next_pos)) / 2
@@ -255,7 +269,8 @@ class Control:
     def uav_info(self):
         uav_info = []
         for key, item in self.uav_index.items():
-            # item.getinfo()
+            if item.no == 0:
+                item.getinfo()
             temp = {'no': int(item.no), 'x': int(item.pos[0]), 'y': int(item.pos[1]), 'z': int(item.pos[2]),
                     'goods_no': int(item.goods_no), 'remain_electricity': item.remain_electricity}
             uav_info.append(temp)
