@@ -58,9 +58,6 @@ class Agent:
             if not self._check():
                 return None
             if self.path_index < self.path_len:
-                if self.goods_no != -1:
-                    self.remain_electricity -= self.good_weight   # 更新电量
-
                 self.pos = self.path[self.path_index]
                 self.path_index += 1
                 if self.path_index == self.path_len:
@@ -72,15 +69,22 @@ class Agent:
                         self.path_len = 0
                         self.catch_goods = -1
                         self.behavior = 1
-                        self.good_weight = 0
+                        self.IsArrive = 1
+                        #  到达的时刻就可以充电
+                        if self.pos == self.charge_pos:
+                            self.is_charge = 1
+                            self.remain_electricity += self.charge
+                            if self.remain_electricity >= self.capacity:
+                                self.remain_electricity = self.capacity
+                                self.is_charge = 0
             else:
-                if self.goods_no != -1:
-                    self.remain_electricity -= self.good_weight   # 更新电量
-
                 pos = self.goods_list.pop()
                 self.set_path(path_planning(self.pos, pos), 0)
                 self.pos = self.path[self.path_index]
                 self.path_index += 1
+
+            if self.goods_no != -1:
+                self.remain_electricity -= self.good_weight  # 更新电量
         else:
             if self.pos == self.charge_pos:
                 self.is_charge = 1
@@ -101,7 +105,7 @@ class Agent:
         self.IsArrive = 1
 
     def _check(self):
-        next_pos = self.path[self.path_index]
+        next_pos = self.next_pos()
         dir = (next_pos[0] - self.pos[0], next_pos[1] - self.pos[1], next_pos[2] - self.pos[2])
         if dir in self.dir:
             if self.pos[2] < self.h_low:
@@ -114,10 +118,10 @@ class Agent:
             return False
 
     def getinfo(self):
-        print_info = 'no:{}, type:{}, pos:{}, status:{}, goods:{}, wait:{}\n' \
+        print_info = 'no:{}, type:{}, pos:{}, status:{}, goods:{}, wait:{}, is_charge:{}, pass_allow:{}\n' \
                      'load_weight:{:3}, value:{:3}, arrive:{}, behavior:{}, power:{:5}'.\
-            format(self.no, self.type, self.pos, self.status, self.goods_no,
-                   self.wait, self.load_weight, self.value, self.IsArrive, self.behavior, self.remain_electricity)
+            format(self.no, self.type, self.pos, self.status, self.goods_no, self.wait, self.is_charge, self.pass_allow,
+                     self.load_weight, self.value, self.IsArrive, self.behavior, self.remain_electricity)
         print(print_info)
 
 

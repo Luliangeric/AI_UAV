@@ -112,18 +112,20 @@ class Control:
     def step(self):
         allow = 0
         for item in self.uav_index.values():
-            if item.pos[0] == self.parking[0] and item.pos[1] == self.parking[1] and 0 < item.pos[2] <= self.h_low:
-                if item.behavior == 3:
+            if item.behavior == 3:
+                if abs(item.pos[0] - self.parking[0]) + abs(item.pos[1] - self.parking[1]) < 4:
                     allow = -1
-                else:
+                    break
+            else:
+                if item.pos[0] == self.parking[0] and item.pos[1] == self.parking[1] and 0 < item.pos[2] <= self.h_low:
                     allow = 1
-                break
+                    break
 
         for item in self.uav_index.values():
             if not allow:
                 item.pass_allow = 1
             elif allow == 1:
-                if item.behavior == 3 and abs(item.pos[0] - self.parking[0]) + abs(item.pos[1] - self.parking[1]) < 3:
+                if item.behavior == 3 and abs(item.pos[0] - self.parking[0]) + abs(item.pos[1] - self.parking[1]) < 4:
                     item.pass_allow = 0
             else:
                 if item.pos == self.parking:
@@ -139,7 +141,7 @@ class Control:
         check_point = set()
         temp = dict()
         for key, item in self.uav_index.items():
-            if item.IsArrive:
+            if item.IsArrive or item.is_charge:
                 check_point.add(item.pos)
             else:
                 temp[key] = item

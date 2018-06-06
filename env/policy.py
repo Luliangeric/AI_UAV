@@ -84,12 +84,12 @@ class Policy(Control):
                 uav = self.uav_index[key]
 
                 good_start = self.good_start_list[good_no]
-                good_end = self.good_goal_list[good_no]
                 if len(item):
                     heuristic_dis = max(abs(good_start[0] - uav.pos[0]), abs(good_start[1] - uav.pos[1])) \
                                     + abs(uav.pos[2] - self.h_low) + self.h_low  # 计算与货物的启发式距离
-                    dis = heuristic_dis + max(abs(good_end[0] - good_start[0]), abs(good_end[1] - good_start[1]))
-                    if self.goods_solved_info[good_no] / dis < item[0][1]:
+                    tmp_good = self.goods_solved_info[good_no]
+                    dis = heuristic_dis + tmp_good[2] + 6
+                    if tmp_good[0] / (dis * tmp_good[1]) < item[0][1]:
                         self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
                         self.good_start_list.pop(good_no)
                         self.good_goal_list.pop(good_no)
@@ -114,14 +114,15 @@ class Policy(Control):
                 if good[0] in picked_good:
                     continue
                 else:
+                    tmp_good = self.goods_not_solved.pop(good[0])
+
                     self.goods_solved[good[0]] = key
                     self.goods_solved_inverse[key] = good[0]
-                    self.goods_solved_info[good[0]] = good[2]
-                    self.good_start_list[good[0]] = good[3]
-                    self.good_goal_list[good[0]] = good[4]
+                    self.goods_solved_info[good[0]] = (tmp_good['value'], tmp_good['weight'], tmp_good['dis'])
+                    self.good_start_list[good[0]] = tmp_good['start_pos']
+                    self.good_goal_list[good[0]] = tmp_good['end_pos']
 
-                    self.pick_goods(key, good[0], good[5], good[3], good[4])
-                    self.goods_not_solved.pop(good[0])
+                    self.pick_goods(key, good[0], tmp_good['weight'], tmp_good['start_pos'], tmp_good['end_pos'])
 
                     picked_good.add(good[0])
                     free_list.remove(key)
@@ -372,7 +373,7 @@ class Policy(Control):
                 elif not good['status'] and good['left_time'] > self.h_low:
                     self.good_num[0] += 1
                     s_x, s_y, e_x, e_y = good['start_x'], good['start_y'], good['end_x'], good['end_y']
-                    dis = len(self.astar((s_x, s_y, self.h_low), (e_x, e_y, self.h_low)))
+                    dis = len(self.astar((s_x, s_y, self.h_low), (e_x, e_y, self.h_low))) + 2 * self.h_low
                     self.goods_not_solved[good['no']] = {'start_pos': (s_x, s_y), 'end_pos': (e_x, e_y), 'dis': dis,
                                     'weight': good['weight'], 'value': good['value'], 'left_time': good['left_time']}
 
@@ -389,12 +390,10 @@ class Policy(Control):
                 if heuristic_dis >= item['left_time']:
                     continue
                 else:
-                    # carry_dis = max(abs(item['end_pos'][0] - item['start_pos'][0]),
-                    #                 abs(item['end_pos'][1] - item['start_pos'][1])) + 2 * self.h_low
                     if (item['dis'] + 6) * item['weight'] > uav.remain_electricity:
                         continue
                     dis = heuristic_dis + item['dis']
-                    uav_goods_list.append((good_no, item['value'] / (dis * item['weight']), item['value'], item['start_pos'], item['end_pos'], item['weight']))
+                    uav_goods_list.append((good_no, item['value'] / (dis * item['weight'])))
         uav_goods_list.sort(key=lambda x: x[1], reverse=True)
         return uav_goods_list
 
@@ -411,8 +410,8 @@ class Policy(Control):
         while 1:
             value_list = []
             for i, key in enumerate(self.type_uav):
-                if key == self.cheap_uav_type:
-                    self.rate[i] += 0.0001
+                # if key == self.cheap_uav_type:
+                #     self.rate[i] += 0.0001
                 value_list.append(self.type_num[i] / self.rate[i])
             temp = min(value_list)
             index = value_list.index(temp)
