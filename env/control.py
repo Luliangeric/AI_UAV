@@ -110,27 +110,33 @@ class Control:
         return destroy_list
 
     def step(self):
-        allow = 0
+        allow_up = 1
+        allow_down = 1
         for item in self.uav_index.values():
             if item.behavior == 3:
-                if max(abs(item.pos[0] - self.parking[0]), abs(item.pos[1] - self.parking[1])) < 3:
-                    allow = -1
-            else:
-                if item.pos[0] == self.parking[0] and item.pos[1] == self.parking[1] and 0 < item.pos[2] <= self.h_low:
-                    allow = 1
+                if max(abs(item.pos[0] - self.parking[0]), abs(item.pos[1] - self.parking[1])) < 4:
+                    allow_up = 0
+                    break
+        for item in self.uav_index.values():
+            if item.pos[0] == self.parking[0] and item.pos[1] == self.parking[1] and 0 < item.pos[2] <= self.h_low:
+                if item.behavior != 3:
+                    allow_down = 0
                     break
 
         for item in self.uav_index.values():
-            if not allow:
+            if allow_up and allow_down:
                 item.pass_allow = 1
-            elif allow == 1:
-                if item.behavior == 3 and max(abs(item.pos[0] - self.parking[0]), abs(item.pos[1] - self.parking[1])) < 4:
-                    item.pass_allow = 0
             else:
-                if item.pos == self.parking:
-                    item.pass_allow = 0
-                if item.behavior == 3:
-                    item.pass_allow = 1
+                if allow_down == 0:
+                    if item.behavior == 3 and max(abs(item.pos[0] - self.parking[0]), abs(item.pos[1] - self.parking[1])) < 4:
+                        item.pass_allow = 0
+
+                if allow_up == 0:
+                    if item.pos == self.parking:
+                        item.pass_allow = 0
+                    if allow_down == 1:
+                        if item.behavior == 3:
+                            item.pass_allow = 1
 
         self.check_safe()
 
@@ -244,8 +250,12 @@ class Control:
         for key, item in charge_uav.items():
             if item.pos in check_point:
                 next_pos = (item.pos[0], item.pos[1], item.pos[2] - 1)
-                check_point.add(next_pos)
+                if next_pos in check_point:
+                    next_pos = (item.pos[0], item.pos[1], item.pos[2] + 1)
+                    check_point.add(next_pos)
                 self.drive_no(key, next_pos)
+            else:
+                check_point.add(item.pos)
 
     def _check_point(self, check_point, pos, next_pos):
         mid_pos = (np.array(pos) + np.array(next_pos)) / 2
@@ -269,7 +279,7 @@ class Control:
     def uav_info(self):
         uav_info = []
         for key, item in self.uav_index.items():
-            if item.no == 0:
+            if item.no == 35:
                 item.getinfo()
             temp = {'no': int(item.no), 'x': int(item.pos[0]), 'y': int(item.pos[1]), 'z': int(item.pos[2]),
                     'goods_no': int(item.goods_no), 'remain_electricity': item.remain_electricity}

@@ -40,7 +40,7 @@ class Policy(Control):
             total_value = 0
             for item in self.uav_price.keys():
                 total_value += temp / self.uav_price[item]['value']
-            self.rate.append(1 / total_value)
+            self.rate.append(1 / total_value + 0.03)
 
         for item in self.uav_index.values():
             index = self.type_uav.index(item.type)
