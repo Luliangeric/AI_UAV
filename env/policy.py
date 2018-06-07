@@ -52,8 +52,10 @@ class Policy(Control):
 
         self.kill_list = dict()
 
-        self.low_power = (2 * self.h_low + int(max(self.parking[0], self.parking[1]) / 4)) \
+        self.low_power = (2 * self.h_low + int(max(self.parking[0], self.parking[1]) / 2)) \
                             * self.uav_price[self.cheap_uav_type]['load_weight']
+
+        self.enemy_first_good_no = set()
 
     def analyze(self, pstMatchStatus):
         self.value = pstMatchStatus['we_value']
@@ -95,17 +97,36 @@ class Policy(Control):
                         self.good_goal_list.pop(good_no)
                         self.goods_solved_info.pop(good_no)
                     else:
+                        for enemy in self.oth_enemy_list.values():
+                            if (enemy['x'], enemy['y']) == good_start and enemy['z'] < self.h_low:
+                                if enemy['value'] >= uav.load_weight and \
+                                        max(uav.pos[0] - good_start[0], uav.pos[1] - good_start[1]) < 2 * self.h_low:
+                                    if enemy['value'] == uav.load_weight and \
+                                            enemy['remain_electricity'] <= uav.remain_electricity:
+                                        self.setpath(key, (*good_start, 0), 2)
+                                self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
+                                self.good_start_list.pop(good_no)
+                                self.good_goal_list.pop(good_no)
+                                self.goods_solved_info.pop(good_no)  # 如果对方先拾取，判断是否攻击
+
+                                self.enemy_first_good_no.add(good_no)
+                                break
                         free_list.remove(key)
                         continue
                 else:
                     for enemy in self.oth_enemy_list.values():
-                        if (enemy['x'], enemy['y']) == self.good_start_list[good_no] and uav['z'] < self.h_low:
-                            if enemy['load_weight'] > uav.load_weight:
-                                self.setpath(key, (*good_start, 0), 2)
-                                self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
-                                self.good_start_list.pop(good_no)
-                                self.good_goal_list.pop(good_no)
-                                self.goods_solved_info.pop(good_no)
+                        if (enemy['x'], enemy['y']) == good_start and enemy['z'] < self.h_low:
+                            if enemy['value'] >= uav.load_weight and \
+                                    max(uav.pos[0] - good_start[0], uav.pos[1] - good_start[1]) < 2 * self.h_low:
+                                if enemy['value'] == uav.load_weight and \
+                                        enemy['remain_electricity'] <= uav.remain_electricity:
+                                    self.setpath(key, (*good_start, 0), 2)
+                            self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
+                            self.good_start_list.pop(good_no)
+                            self.good_goal_list.pop(good_no)
+                            self.goods_solved_info.pop(good_no)  # 如果对方先拾取，判断是否攻击
+
+                            self.enemy_first_good_no.add(good_no)
                             break
                     free_list.remove(key)
                     continue
@@ -343,12 +364,12 @@ class Policy(Control):
 
                     if item['no'] in self.pick_enemy_solve:
                         self.pick_enemy_solve.remove(item['no'])
-                if item['no'] not in self.oth_enemy_list:
-                    self.oth_enemy_list[item['no']] = item
+
+                self.oth_enemy_list[item['no']] = item
 
         # 添加货物信息
         for good in goods:
-            if good['no'] in self.good_start_list:
+            if good['no'] in self.good_start_list or good['no'] in self.enemy_first_good_no:
                 continue
             elif good['no'] in self.good_start_list_enemy:
                 continue

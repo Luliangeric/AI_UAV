@@ -279,8 +279,8 @@ class Control:
     def uav_info(self):
         uav_info = []
         for key, item in self.uav_index.items():
-            if item.no == 35:
-                item.getinfo()
+            # if item.no == 0:
+            #     item.getinfo()
             temp = {'no': int(item.no), 'x': int(item.pos[0]), 'y': int(item.pos[1]), 'z': int(item.pos[2]),
                     'goods_no': int(item.goods_no), 'remain_electricity': item.remain_electricity}
             uav_info.append(temp)
