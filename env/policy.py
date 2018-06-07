@@ -99,10 +99,10 @@ class Policy(Control):
                     else:
                         for enemy in self.oth_enemy_list.values():
                             if (enemy['x'], enemy['y']) == good_start and enemy['z'] < self.h_low:
-                                if enemy['value'] >= uav.load_weight and \
+                                if enemy['load_weight'] >= uav.load_weight and \
                                         max(uav.pos[0] - good_start[0], uav.pos[1] - good_start[1]) < 2 * self.h_low:
-                                    if enemy['value'] == uav.load_weight and \
-                                            enemy['remain_electricity'] <= uav.remain_electricity:
+                                    if enemy['load_weight'] == uav.load_weight and \
+                                            enemy['remain_electricity'] > uav.remain_electricity:
                                         self.setpath(key, (*good_start, 0), 2)
                                 self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
                                 self.good_start_list.pop(good_no)
@@ -116,10 +116,10 @@ class Policy(Control):
                 else:
                     for enemy in self.oth_enemy_list.values():
                         if (enemy['x'], enemy['y']) == good_start and enemy['z'] < self.h_low:
-                            if enemy['value'] >= uav.load_weight and \
+                            if enemy['load_weight'] >= uav.load_weight and \
                                     max(uav.pos[0] - good_start[0], uav.pos[1] - good_start[1]) < 2 * self.h_low:
-                                if enemy['value'] == uav.load_weight and \
-                                        enemy['remain_electricity'] <= uav.remain_electricity:
+                                if enemy['load_weight'] == uav.load_weight and \
+                                        enemy['remain_electricity'] > uav.remain_electricity:
                                     self.setpath(key, (*good_start, 0), 2)
                             self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
                             self.good_start_list.pop(good_no)
