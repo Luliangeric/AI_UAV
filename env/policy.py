@@ -96,6 +96,7 @@ class Policy(Control):
                         self.good_start_list.pop(good_no)
                         self.good_goal_list.pop(good_no)
                         self.goods_solved_info.pop(good_no)
+                        uav.reset()
                     else:
                         for enemy in self.oth_enemy_list.values():
                             if (enemy['x'], enemy['y']) == good_start and enemy['z'] < self.h_low:
@@ -104,8 +105,12 @@ class Policy(Control):
                                     if enemy['load_weight'] == uav.load_weight:
                                         if enemy['remain_electricity'] > uav.remain_electricity:
                                             self.setpath(key, (*good_start, 0), 2)
+                                        else:
+                                            uav.reset()
                                     else:
                                         self.setpath(key, (*good_start, 0), 2)
+                                else:
+                                    uav.reset()
                                 self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
                                 self.good_start_list.pop(good_no)
                                 self.good_goal_list.pop(good_no)
@@ -123,15 +128,18 @@ class Policy(Control):
                                 if enemy['load_weight'] == uav.load_weight:
                                     if enemy['remain_electricity'] > uav.remain_electricity:
                                         self.setpath(key, (*good_start, 0), 2)
+                                    else:
+                                        uav.reset()
                                 else:
                                     self.setpath(key, (*good_start, 0), 2)
+                            else:
+                                uav.reset()
                             self.goods_solved_inverse.pop(self.goods_solved.pop(good_no))
                             self.good_start_list.pop(good_no)
                             self.good_goal_list.pop(good_no)
                             self.goods_solved_info.pop(good_no)  # 如果对方先拾取，判断是否攻击
 
                             self.enemy_first_good_no.add(good_no)
-                            uav.reset()
                             break
                     free_list.remove(key)
                     continue
