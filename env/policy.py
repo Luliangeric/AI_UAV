@@ -84,8 +84,8 @@ class Policy(Control):
         destroy = self.uav_update(pstMatchStatus)
         self.solve_goods(goods, destroy)
         _, free_list = self.uav_we()
-        self.pick(free_list)
         self.attack(free_list)
+        self.pick(free_list)
         self.free_uav(free_list)
 
     def pick(self, free_list):
