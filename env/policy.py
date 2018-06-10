@@ -31,21 +31,33 @@ class Policy(Control):
         self.pick_enemy_solve = set()
         self.we_uav = list()
 
-        self.type_num = list()
+        self.type_num = dict()
         self.type_uav = list()
-        self.rate = list()
-        for key in self.uav_price.keys():
-            self.type_uav.append(key)
-            self.type_num.append(1)
-            temp = self.uav_price[key]['value']
-            total_value = 0
-            for item in self.uav_price.keys():
-                total_value += temp / self.uav_price[item]['value']
-            self.rate.append(1 / total_value + 0.01)
+        self.rate = dict()
+
+        tmp_uav_type = list(self.uav_price.values())
+        tmp_uav_type.sort(key=lambda x: x['value'])
+        type_uav = []
+        for item in tmp_uav_type:
+            type_uav.append(item['type'])
+
+        if len(type_uav) > 4:
+            self.type_uav.append(type_uav[0])
+            index = int((len(tmp_uav_type) - 1) / 2)
+            self.type_uav.append(type_uav[int(index / 2)])
+            self.type_uav.append(type_uav[index])
+            self.type_uav.append(type_uav[int((len(tmp_uav_type) - 1 + index) / 2)])
+
+        for i, item in enumerate(self.type_uav):
+            self.type_num[item] = 1
+            if i == 1:
+                self.rate[item] = np.exp(-i) * 0.75
+            else:
+                self.rate[item] = np.exp(-i)
 
         for item in self.uav_index.values():
-            index = self.type_uav.index(item.type)
-            self.type_num[index] += 1
+            if item.type in self.type_uav:
+                self.type_num[item.type] += 1
 
         self.value = 0
         self.good_num = [0, 0, 0]
@@ -204,7 +216,7 @@ class Policy(Control):
                         self.setpath(uav_no, mid_pos, 2)  # 如果已经派了无人机， 就不断设置最新的跟随路径
 
         if len(uav_attack_protect):
-            for _ in range(5):
+            for _ in range(8):
                 try:
                     enemy = enemy_list.pop()  # 挑出价值最大的无人机
                 except IndexError:
@@ -301,8 +313,8 @@ class Policy(Control):
     def solve_goods(self, goods, destroy):
         # 对于撞毁的无人机，更新我方拾取的货物列表
         for key in destroy:
-            index = self.type_uav.index(key[1])
-            self.type_num[index] -= 1
+            if key[1] in self.type_uav:
+                self.type_num[key[1]] -= 1
 
             for enemy_no, uav_no in self.kill_list.items():
                 if uav_no == key[0]:
@@ -457,10 +469,8 @@ class Policy(Control):
         purchase_list = []
         while 1:
             value_list = []
-            for i, key in enumerate(self.type_uav):
-                # if key == self.cheap_uav_type:
-                #     self.rate[i] += 0.0001
-                value_list.append(self.type_num[i] / self.rate[i])
+            for key in self.type_uav:
+                value_list.append(self.type_num[key] / self.rate[key])
             temp = min(value_list)
             index = value_list.index(temp)
             uav_type = self.type_uav[index]
@@ -469,8 +479,7 @@ class Policy(Control):
             print(self.type_uav, self.type_num, self.rate)
             if self.value >= self.uav_price[uav_type]['value']:
                 self.value -= self.uav_price[uav_type]['value']
-                index = self.type_uav.index(uav_type)
-                self.type_num[index] += 1
+                self.type_num[uav_type] += 1
                 purchase_list.append({'purchase': uav_type})
             else:
                 return purchase_list
