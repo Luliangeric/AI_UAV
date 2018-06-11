@@ -184,6 +184,8 @@ class Policy(Control):
         uav_attack_protect = dict()
         for key in free_list:
             uav = self.uav_index[key]
+            if not uav.behavior:
+                continue
             if uav.type == self.cheap_uav_type and uav.pos[2] >= self.h_low:
                 uav_attack_protect[key] = uav            # 获得最便宜的机型
 
