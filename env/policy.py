@@ -51,7 +51,7 @@ class Policy(Control):
         for i, item in enumerate(self.type_uav):
             self.type_num[item] = 1
             if i == 1:
-                self.rate[item] = np.exp(-i) * 0.75
+                self.rate[item] = np.exp(-i) * 0.7
             else:
                 self.rate[item] = np.exp(-i)
 
@@ -71,6 +71,8 @@ class Policy(Control):
         self.enemy_first_good_no = set()
         self.enemy_parking = None
 
+        self.goods_pre = set()
+
     def analyze(self, pstMatchStatus):
         self.value = pstMatchStatus['we_value']
         self.enemy_uav = pstMatchStatus['UAV_enemy']
@@ -84,8 +86,8 @@ class Policy(Control):
         destroy = self.uav_update(pstMatchStatus)
         self.solve_goods(goods, destroy)
         _, free_list = self.uav_we()
-        self.attack(free_list)
         self.pick(free_list)
+        self.attack(free_list)
         self.free_uav(free_list)
 
     def pick(self, free_list):
@@ -123,20 +125,13 @@ class Policy(Control):
                     for enemy in self.oth_enemy_list.values():
                         enemy_pick = 0
                         if (enemy['x'], enemy['y']) == good_start and enemy['z'] < self.h_low:
-                            if enemy['no'] in self.kill_list:
+                            if enemy['no'] in self.kill_list and self.kill_list[enemy['no']]:
                                 uav.reset()
                                 enemy_pick = 1
                             else:
                                 if enemy['load_weight'] >= uav.load_weight and \
-                                        max(uav.pos[0] - good_start[0], uav.pos[1] - good_start[1]) < 2 * self.h_low:
-                                    if enemy['load_weight'] == uav.load_weight:
-                                        if enemy['remain_electricity'] > uav.remain_electricity:
-                                            self.setpath(key, (*good_start, 0), 2)
-                                        else:
-                                            uav.reset()
-                                            enemy_pick = 1
-                                    else:
-                                        self.setpath(key, (*good_start, 0), 2)
+                                        max(abs(uav.pos[0] - good_start[0]), abs(uav.pos[1] - good_start[1])) < 2 * self.h_low:
+                                    self.setpath(key, (*good_start, 0), 2)
                                 else:
                                     uav.reset()
                                     enemy_pick = 1
@@ -184,8 +179,7 @@ class Policy(Control):
         uav_attack_protect = dict()
         for key in free_list:
             uav = self.uav_index[key]
-            if not uav.behavior:
-                continue
+
             if uav.type == self.cheap_uav_type and uav.pos[2] >= self.h_low:
                 uav_attack_protect[key] = uav            # 获得最便宜的机型
 
@@ -194,7 +188,9 @@ class Policy(Control):
             if not item['status'] and (item['x'], item['y'], item['z']) != self.enemy_parking:
                 enemy_list.append(item)
             elif item['status'] == 2 and item['no'] in self.kill_list:
-                self.kill_list.pop(item['no'])
+                uav = self.kill_list.pop(item['no'])
+                if uav in self.uav_index:
+                    self.uav_index[uav].reset()
         enemy_list.sort(key=lambda x: self.uav_price[x['type']]['value'])
 
         for enemy in enemy_list:
@@ -216,6 +212,47 @@ class Policy(Control):
                         y = int((enemy['y'] - uav.pos[1]) / 5) + uav.pos[1]
                         mid_pos = (x, y, uav.pos[2])
                         self.setpath(uav_no, mid_pos, 2)  # 如果已经派了无人机， 就不断设置最新的跟随路径
+
+        # 在对方拾取货物或者放下获得的时候攻击
+        attack_object = list(self.pick_enemy_list.values())
+        attack_object.sort(key=lambda x: x[2], reverse=True)
+        for item in attack_object:
+            flag = 1
+            if item[3] in self.kill_list or item[3] in self.pick_enemy_solve:
+                continue
+            for key, uav in uav_attack_protect.items():
+                if uav.behavior == 2 or uav.pos[2] < self.h_low:
+                    continue
+                if self.good_start_list_enemy[item[0]] in self.good_start_list.values():
+                    continue
+                attack_pos = np.array((*self.good_start_list_enemy[item[0]], self.h_low))
+                tmp_pos = uav.pos - attack_pos
+                if item[3] in self.pick_enemy_list_pre:
+                    dis = 2 * self.h_low
+                else:
+                    dis = self.h_low
+                if max(abs(tmp_pos[0]), abs(tmp_pos[1])) + abs(tmp_pos[2]) < dis:  # 判断是否能在对方水平移动前赶到
+                    self.setpath(key, tuple(attack_pos - (0, 0, self.h_low)), 2)
+                    free_list.remove(key)
+                    uav_attack_protect.pop(key)
+                    self.pick_enemy_solve.add(item[3])
+                    flag = 0
+                    break
+            if flag:
+                for key, uav in uav_attack_protect.items():
+                    if uav.behavior == 2 or uav.pos[2] < self.h_low:
+                        continue
+                    attack_pos = np.array((*self.good_goal_list_enemy[item[0]], self.h_low))
+                    tmp_pos = uav.pos - attack_pos
+                    tmp_pos_enemy = item[1] - attack_pos
+                    dis_we = max(abs(tmp_pos[0]), abs(tmp_pos[1])) + abs(tmp_pos[2] - self.h_low)
+                    dis_enemy = max(abs(tmp_pos_enemy[0]), abs(tmp_pos_enemy[1])) + abs(tmp_pos_enemy[2] - self.h_low)
+                    if dis_we < dis_enemy and dis_enemy - dis_we <= 2 * self.h_low:  # 在放下货物时判断能否感到，也不能太早
+                        self.setpath(key, tuple(attack_pos - (0, 0, self.h_low)), 2)
+                        free_list.remove(key)
+                        uav_attack_protect.pop(key)
+                        self.pick_enemy_solve.add(item[3])
+                        break
 
         if len(uav_attack_protect):
             for _ in range(8):
@@ -249,46 +286,6 @@ class Policy(Control):
                 self.kill_list[enemy['no']] = uav.no
                 free_list.remove(key[0])
                 uav_attack_protect.pop(key[0])
-        # 在对方拾取货物或者放下获得的时候攻击
-        attack_object = list(self.pick_enemy_list.values())
-        attack_object.sort(key=lambda x: x[2], reverse=True)
-        for item in attack_object:
-            flag = 1
-            if item[3] in self.kill_list or item[3] in self.pick_enemy_solve:
-                continue
-            for key, uav in uav_attack_protect.items():
-                if uav.behavior == 2 or uav.pos[2] < self.h_low:
-                    continue
-                if self.good_start_list_enemy[item[0]] in self.good_start_list.values():
-                    continue
-                attack_pos = np.array((*self.good_start_list_enemy[item[0]], self.h_low))
-                tmp_pos = uav.pos - attack_pos
-                if item[3] in self.pick_enemy_list_pre:
-                    dis = 2 * self.h_low
-                else:
-                    dis = self.h_low
-                if max(abs(tmp_pos[0]), abs(tmp_pos[1])) + abs(tmp_pos[2]) < dis:  # 判断是否能在对方水平移动前赶到
-                    self.setpath(key, tuple(attack_pos - (0, 0, self.h_low)), 2)
-                    free_list.remove(key)
-                    uav_attack_protect.pop(key)
-                    self.pick_enemy_solve.add(item[3])
-                    flag = 0
-                    break
-            if flag:
-                for key, uav in uav_attack_protect.items():
-                    if uav.behavior == 2 or uav.pos[2] < self.h_low:
-                        continue
-                    attack_pos = np.array((*self.good_goal_list_enemy[item[0]], self.h_low))
-                    tmp_pos = uav.pos - attack_pos
-                    tmp_pos_enemy = item[1] - attack_pos
-                    dis_we = max(abs(tmp_pos[0]), abs(tmp_pos[1])) + abs(tmp_pos[2])
-                    dis_enemy = max(abs(tmp_pos_enemy[0]), abs(tmp_pos_enemy[1])) + abs(tmp_pos_enemy[2])
-                    if dis_we < dis_enemy and dis_enemy - dis_we <= 2 * self.h_low:  # 在放下货物时判断能否感到，也不能太早
-                        self.setpath(key, tuple(attack_pos - (0, 0, self.h_low)), 2)
-                        free_list.remove(key)
-                        uav_attack_protect.pop(key)
-                        self.pick_enemy_solve.add(item[3])
-                        break
 
     def free_uav(self, free_list):
         # 对于空闲的无人机，给定随机位置，返回充电
@@ -305,9 +302,12 @@ class Policy(Control):
                     gpos = self.parking
                     behave = 3
                 else:
-                    gpos = (int(self.MapSize[0] / 2) + random.randint(-int(self.MapSize[0] / 2), int(self.MapSize[0] / 2)),
-                            int(self.MapSize[1] / 2) + random.randint(-int(self.MapSize[1] / 2), int(self.MapSize[1] / 2)),
-                            self.h_low + random.randint(0, 2))
+                    while 1:
+                        gpos = (int(self.MapSize[0] / 2) + random.randint(-int(self.MapSize[0] / 2), int(self.MapSize[0] / 2)),
+                                int(self.MapSize[1] / 2) + random.randint(-int(self.MapSize[1] / 2), int(self.MapSize[1] / 2)),
+                                self.h_low + random.randint(0, 2))
+                        if self._check(gpos):
+                            break
                     behave = 1
 
             self.setpath(key, gpos, behave)
@@ -355,7 +355,9 @@ class Policy(Control):
 
         for key in destroy_enemy:
             if key in self.kill_list:
-                self.kill_list.pop(key)
+                uav = self.kill_list.pop(key)
+                if uav in self.uav_index:
+                    self.uav_index[uav].reset()
             if key in self.pick_enemy_solve:
                 self.pick_enemy_solve.remove(key)
             if key in self.pick_enemy_list_pre:
@@ -383,10 +385,15 @@ class Policy(Control):
                         uav_no = self.goods_solved.pop(item['goods_no'])
                         self.goods_solved_inverse.pop(uav_no)
                         self.goods_solved_info.pop(item['goods_no'])
-                        self.good_start_list.pop(item['goods_no'])
+                        start_pos = self.good_start_list.pop(item['goods_no'])
                         self.good_goal_list.pop(item['goods_no'])
                         if uav_no in self.uav_index:
-                            self.uav_index[uav_no].reset()
+                            uav = self.uav_index[uav_no]
+                            if item['load_weight'] >= uav.load_weight and \
+                                    max(abs(start_pos[0] - uav.pos[0]), abs(start_pos[1] - uav.pos[1])) < self.h_low:
+                                self.setpath(uav_no, (*start_pos, 0), 2)
+                            else:
+                                uav.reset()
                     elif item['goods_no'] in self.goods_not_solved:
                         self.goods_not_solved.pop(item['goods_no'])
                 else:
@@ -403,8 +410,8 @@ class Policy(Control):
                     if item['no'] in self.pick_enemy_solve:
                         self.pick_enemy_solve.remove(item['no'])
 
-                if item['no'] in self.pick_enemy_list_pre:
-                    self.pick_enemy_list_pre.remove(item['no'])
+                    if item['no'] in self.pick_enemy_list_pre:
+                        self.pick_enemy_list_pre.remove(item['no'])
 
                 self.oth_enemy_list[item['no']] = item
 
@@ -438,6 +445,14 @@ class Policy(Control):
                     dis = len(self.astar((s_x, s_y, self.h_low), (e_x, e_y, self.h_low))) + 2 * self.h_low
                     self.goods_not_solved[good['no']] = {'start_pos': (s_x, s_y), 'end_pos': (e_x, e_y), 'dis': dis,
                                     'weight': good['weight'], 'value': good['value'], 'left_time': good['left_time']}
+        good_set = set()
+        for good in goods:
+            good_set.add(good['no'])
+        dis_good = self.goods_pre - self.goods_pre & good_set
+        self.goods_pre = good_set
+        for key in dis_good:
+            if key in self.goods_not_solved:
+                self.goods_not_solved.pop(key)
 
     # 计算飞机与货物之间的距离，选择价值最大的
     def uav_goods_dis(self, uav_no):
@@ -452,7 +467,7 @@ class Policy(Control):
                 if heuristic_dis >= item['left_time']:
                     continue
                 else:
-                    if (item['dis'] + 6) * item['weight'] > uav.remain_electricity:
+                    if (item['dis'] + 4) * item['weight'] > uav.remain_electricity:
                         continue
                     dis = heuristic_dis + item['dis']
                     uav_goods_list.append((good_no, item['value'] / dis))

@@ -14,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="policy.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="policy.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/env/policy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9424">
-              <caret line="496" column="26" selection-start-line="496" selection-start-column="26" selection-end-line="496" selection-end-column="26" />
+            <state relative-caret-position="168">
+              <caret line="87" column="16" selection-start-line="87" selection-start-column="16" selection-end-line="87" selection-end-column="16" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -57,11 +57,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/env/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1406">
-              <caret line="74" column="12" lean-forward="true" selection-start-line="74" selection-start-column="12" selection-end-line="74" selection-end-column="12" />
+            <state relative-caret-position="447">
+              <caret line="74" column="11" selection-start-line="74" selection-start-column="11" selection-end-line="74" selection-end-column="11" />
             </state>
           </provider>
         </entry>
@@ -81,8 +81,8 @@
       <list>
         <option value="$PROJECT_DIR$/env/uav.py" />
         <option value="$PROJECT_DIR$/main.py" />
-        <option value="$PROJECT_DIR$/env/test.py" />
         <option value="$PROJECT_DIR$/env/control.py" />
+        <option value="$PROJECT_DIR$/env/test.py" />
         <option value="$PROJECT_DIR$/env/policy.py" />
       </list>
     </option>
@@ -98,7 +98,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -115,10 +114,11 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$USER_HOME$/PycharmProjects/AI_UAV" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -132,7 +132,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.policy">
+  <component name="RunManager" selected="Python.test">
     <configuration name="control" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="AI_UAV" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -194,8 +194,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.policy" />
         <item itemvalue="Python.test" />
+        <item itemvalue="Python.policy" />
         <item itemvalue="Python.control" />
       </list>
     </recent_temporary>
@@ -330,31 +330,37 @@
       <option name="project" value="LOCAL" />
       <updated>1528642015799</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="优先攻击">
+      <created>1528681385333</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1528681385333</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="953" y="0" width="974" height="1047" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17094018" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Messages" order="7" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50164294" side_tool="true" weight="0.2973568" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.29845816" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.27422908" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.27863437" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" sideWeight="0.49835706" visible="true" weight="0.2918502" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" sideWeight="0.49835706" visible="true" weight="0.3270925" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Messages" order="7" />
     </layout>
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -410,7 +416,8 @@
     <MESSAGE value="更新了拾取时的攻击策略" />
     <MESSAGE value="修复了拾取时的攻击策略bug" />
     <MESSAGE value="修改了购买策略" />
-    <option name="LAST_COMMIT_MESSAGE" value="修改了购买策略" />
+    <MESSAGE value="优先攻击" />
+    <option name="LAST_COMMIT_MESSAGE" value="优先攻击" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -821,13 +828,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/env/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1406">
-          <caret line="74" column="12" lean-forward="true" selection-start-line="74" selection-start-column="12" selection-end-line="74" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/env/control.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1254">
@@ -841,11 +841,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/env/policy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9424">
-          <caret line="496" column="26" selection-start-line="496" selection-start-column="26" selection-end-line="496" selection-end-column="26" />
+        <state relative-caret-position="168">
+          <caret line="87" column="16" selection-start-line="87" selection-start-column="16" selection-end-line="87" selection-end-column="16" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/env/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="447">
+          <caret line="74" column="11" selection-start-line="74" selection-start-column="11" selection-end-line="74" selection-end-column="11" />
         </state>
       </provider>
     </entry>

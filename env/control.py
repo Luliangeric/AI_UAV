@@ -44,7 +44,12 @@ class Control:
         self.uav_index = {}
         self.destroy_uav = set()
         for item in iter(self.init_uav):
+            if item['type'] == self.cheap_uav_type:
+                self.uav_init['charge_allow'] = 0
+            else:
+                self.uav_init['charge_allow'] = 1
             self.get_new(item['no'], item['type'])
+        self.uav_init['charge_allow'] = 1
 
     def get_new(self, uav_no, uav_type):
         self.uav_init['type'] = uav_type
@@ -148,12 +153,15 @@ class Control:
         check_point = set()
         temp = dict()
         charge_uav = dict()
+        under_low = list()
         for key, item in self.uav_index.items():
             if item.IsArrive or item.is_charge:
                 check_point.add(item.pos)
             else:
                 if not item.pass_allow and item.behavior == 3:
                     charge_uav[key] = item
+                elif item.pos[2] < self.h_low and item.behavior:
+                    under_low.append(item)
                 else:
                     temp[key] = item
         for behavior in (0, 2, 3, 1):
@@ -247,6 +255,17 @@ class Control:
                     pos = item.next_pos()
                     check_point.add(pos)
                     check_point.add(tuple(mid_pos))
+
+        under_low.sort(key=lambda x: x.pos[2], reverse=True)
+        for item in under_low:
+            pos = item.next_pos()
+            if pos in check_point:
+                item.wait = 1
+                check_point.add(item.pos)
+            else:
+                item.wait = 0
+                check_point.add(pos)
+
         for key, item in charge_uav.items():
             if item.pos in check_point:
                 next_pos = (item.pos[0], item.pos[1], item.pos[2] - 1)
@@ -279,7 +298,7 @@ class Control:
     def uav_info(self):
         uav_info = []
         for key, item in self.uav_index.items():
-            # if item.no == 0:
+            # if item.no == 98:
             #     item.getinfo()
             temp = {'no': int(item.no), 'x': int(item.pos[0]), 'y': int(item.pos[1]), 'z': int(item.pos[2]),
                     'goods_no': int(item.goods_no), 'remain_electricity': item.remain_electricity}

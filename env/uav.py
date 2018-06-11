@@ -36,6 +36,9 @@ class Agent:
         self.good_weight = 0
 
         self.pass_allow = 1
+        self.charge_allow = initinfo['charge_allow']
+        if not self.charge_allow:
+            self.is_charge = 0
 
     def set_path(self, path, behave):
         self.path = path
@@ -91,6 +94,8 @@ class Agent:
                 self.remain_electricity += self.charge
                 if self.remain_electricity >= self.capacity:
                     self.remain_electricity = self.capacity
+                    self.is_charge = 0
+                if not self.charge_allow:
                     self.is_charge = 0
 
     def reset(self):

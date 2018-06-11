@@ -7,7 +7,8 @@ import time
 
 from env.policy import Policy
 
-#从服务器接收一段字符串, 转化成字典的形式
+
+# 从服务器接收一段字符串, 转化成字典的形式
 def RecvJuderData(hSocket):
     nRet = -1
     Message = hSocket.recv(1024 * 1024 * 4)
@@ -22,6 +23,7 @@ def RecvJuderData(hSocket):
 
     return nRet, Dict
 
+
 # 接收一个字典,将其转换成json文件,并计算大小,发送至服务器
 def SendJuderData(hSocket, dict_send):
     str_json = json.dumps(dict_send)
@@ -34,7 +36,8 @@ def SendJuderData(hSocket, dict_send):
     print('sendall', ret)
     return ret
 
-#用户自定义函数, 返回字典FlyPlane, 需要包括 "UAV_info", "purchase_UAV" 两个key.
+
+# 用户自定义函数, 返回字典FlyPlane, 需要包括 "UAV_info", "purchase_UAV" 两个key.
 def AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, policy):
     tic = time.time()
     if pstMatchStatus['time'] == 0:
@@ -50,45 +53,38 @@ def AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, policy):
         policy.time_max = time.time() - tic
     print('time_max:', policy.time_max)
 
-    if time.time() - tic >= 1:
-        raise ImportWarning
     print(policy.good_num, len(policy.goods_not_solved))
     return FlyPlane
-
-
-
 
 
 def main(szIp, nPort, szToken):
     print("server ip %s, prot %d, token %s\n", szIp, nPort, szToken)
 
-    #Need Test // 开始连接服务器
+    # Need Test // 开始连接服务器
     hSocket = socket.socket()
 
     hSocket.connect((szIp, nPort))
 
-    #接受数据  连接成功后，Judger会返回一条消息：
+    # 接受数据  连接成功后，Judger会返回一条消息：
     nRet, _ = RecvJuderData(hSocket)
     if (nRet != 0):
         return nRet
-    
 
     # // 生成表明身份的json
     token = {}
-    token['token'] = szToken        
-    token['action'] = "sendtoken"   
+    token['token'] = szToken
+    token['action'] = "sendtoken"
 
-    
-    #// 选手向裁判服务器表明身份(Player -> Judger)
+    # // 选手向裁判服务器表明身份(Player -> Judger)
     nRet = SendJuderData(hSocket, token)
     if nRet != 0:
         return nRet
 
-    #//身份验证结果(Judger -> Player), 返回字典Message
+    # //身份验证结果(Judger -> Player), 返回字典Message
     nRet, Message = RecvJuderData(hSocket)
     if nRet != 0:
         return nRet
-    
+
     if Message["result"] != 0:
         print("token check error\n")
         return -1
@@ -106,20 +102,20 @@ def main(szIp, nPort, szToken):
     nRet, Message = RecvJuderData(hSocket)
     if nRet != 0:
         return nRet
-    
-    #初始化地图信息
-    pstMapInfo = Message["map"]  
-    
-    #初始化比赛状态信息
+
+    # 初始化地图信息
+    pstMapInfo = Message["map"]
+
+    # 初始化比赛状态信息
     pstMatchStatus = {}
     pstMatchStatus["time"] = 0
 
-    #初始化飞机状态信息
+    # 初始化飞机状态信息
     pstFlayPlane = {}
     pstFlayPlane["nUavNum"] = len(pstMapInfo["init_UAV"])
     pstFlayPlane["astUav"] = []
 
-    #每一步的飞行计划
+    # 每一步的飞行计划
     FlyPlane_send = {}
     FlyPlane_send["token"] = szToken
     FlyPlane_send["action"] = "flyPlane"
@@ -141,16 +137,17 @@ def main(szIp, nPort, szToken):
         nRet = SendJuderData(hSocket, FlyPlane_send)
         if nRet != 0:
             return nRet
-        
+
         # // 接受当前比赛状态
         nRet, pstMatchStatus = RecvJuderData(hSocket)
         if nRet != 0:
             return nRet
-        
+
         if pstMatchStatus["match_status"] == 1:
             print("game over, we value %d, enemy value %d\n", pstMatchStatus["we_value"], pstMatchStatus["enemy_value"])
             hSocket.close()
             return 0
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 4:
